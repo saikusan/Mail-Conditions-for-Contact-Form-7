@@ -3,7 +3,7 @@
 /*
   Plugin Name: Mail Conditions for Contact Form 7
   Description: Helps to create mail conditions in Contact Form 7.
-  Version: 0.1
+  Version: 1.1.0
   Author: Saikuro
   Author URI: https://twitter.com/saikuro
   License: GPLv3
@@ -40,9 +40,13 @@
  * [if radio="Yes"]Chosen option: YES[else]Chosen option: NO[/if]
  *
  * @package default
- * @author Claudio Ilea
- * */
+ * @author Saikuro
+ *
+ **/
+
 class Mail_Conditions_CF7 {
+
+	private $regexp;
 
     /**
      * Creates a new instance of the Mail Conditions plugin.
@@ -52,7 +56,7 @@ class Mail_Conditions_CF7 {
     public function __construct() {
         $this->init_admin();
         $this->init_action();
-        $this->regexp = '/\[if\s+(\S+?)\s*=\s*["\']([\S\s]+?)["\']\s*\]([\S\s]*?)(?:(?:\[else\])([\S\s]*?))*?\[\/if\]/';
+        $this->regexp = '/\[if\s+(\S+?)\s*(?:=\s*["\']([\S\s]+?)["\']\s*)?\]([\S\s]*?)(?:(?:\[else\])([\S\s]*?))*?\[\/if\]/';
     }
     
     /**
@@ -62,6 +66,13 @@ class Mail_Conditions_CF7 {
      */
     public static function init_admin() {
         load_plugin_textdomain('mail-conditions-cf7', false, basename(dirname(__FILE__)) . '/languages/');
+    }  
+
+    /**
+     * Initializes the CF7 action.
+     */
+    private function init_action() {
+        add_action("wpcf7_before_send_mail", array($this, 'prepare_body'), 10, 1);
     }
 
     /**
@@ -71,9 +82,17 @@ class Mail_Conditions_CF7 {
      * @return void
      */
     public function prepare_body($cf7) {
-        $mail = $cf7->prop('mail');
+    	// Get the object.
+    	$wpcf = WPCF7_ContactForm::get_current();
+
+    	// Now we get the mail body and evaluate it.
+        $mail = $wpcf->prop('mail');
         $mail['body'] = $this->evaluate($mail['body']);
-        $cf7->set_properties(array('mail' => $mail));
+
+        // Set the new body.
+        $wpcf->set_properties(array('mail' => $mail));
+
+        return $wpcf;
     }
 
     /**
@@ -97,7 +116,7 @@ class Mail_Conditions_CF7 {
 
             $mail_variable_value = $submission->get_posted_data((string) $variable);
 
-            if ($mail_variable_value == $value) {
+            if ((!empty($value) && $mail_variable_value == $value) || !empty($mail_variable_value)) {
                 $updated_email_body = str_replace($expression, $if_true, $updated_email_body);
             } else if (isset($if_false)) {
                 $updated_email_body = str_replace($expression, $if_false, $updated_email_body);
@@ -107,13 +126,6 @@ class Mail_Conditions_CF7 {
         }
 
         return $updated_email_body;
-    }
-
-    /**
-     * Initializes the CF7 action.
-     */
-    private function init_action() {
-        add_action("wpcf7_before_send_mail", array($this, 'prepare_body'));
     }
 
 }

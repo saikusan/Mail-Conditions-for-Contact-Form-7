@@ -25,6 +25,11 @@ Can I do something like ```[if][if][/if][else][/if]```? No support for nested co
 
 # Changelog
 
-### 0.1
+### 1.1.0
+Release Date - 5 July 2016
+- Updated the plugin to work with the latest Contact Form 7 and WordPress release.
+- Improved shortcode detection.
+
+### 1.0.0
 Release Date - 4 August 2015
 - Initial release.
