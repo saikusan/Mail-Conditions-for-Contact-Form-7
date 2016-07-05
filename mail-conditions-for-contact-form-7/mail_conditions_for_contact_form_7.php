@@ -2,7 +2,7 @@
 
 /*
   Plugin Name: Mail Conditions for Contact Form 7
-  Description: Helps to create mail conditions in Contact Form 7.
+  Description: Adds support for mail conditions in Contact Form 7.
   Version: 1.1.0
   Author: Saikuro
   Author URI: https://twitter.com/saikuro
